@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.pyc
+venv-backend/
+venv-frontend/
+
+# Operating System/IDE Files
+.DS_Store
+*.swp
+.vscode/
+
+# Frontend (Flet specific)
+flet-assets/
+
+# Backend (Sensitive Files)
+backend/.env
+backend/uploads/
