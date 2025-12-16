@@ -52,3 +52,5 @@ CREATE TABLE IF NOT EXISTS Notifications (
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES Users(user_id)
 );
+
+DROP TRIGGER IF EXISTS update_item_status_on_claim_approval;

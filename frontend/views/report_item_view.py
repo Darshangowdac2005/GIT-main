@@ -7,22 +7,40 @@ class ReportItemView(ft.Container):
     def __init__(self, page: ft.Page):
         super().__init__()
         self.page = page
-        
+
         self.title_field = ft.TextField(label="Item Name", width=400)
         self.desc_field = ft.TextField(label="Detailed Description", multiline=True, min_lines=3, width=400)
         self.status_choice = ft.RadioGroup(content=ft.Row([
             ft.Radio(value="lost", label="I Lost This Item"),
             ft.Radio(value="found", label="I Found This Item")
         ]), value="lost")
-        
+
         categories = get_categories()
         self.category_options = [ft.dropdown.Option(key=str(c['category_id']), text=c['name']) for c in categories]
         default_category_key = self.category_options[0].key if self.category_options else None
         self.category_choice = ft.Dropdown(label="Category", width=400, options=self.category_options, value=default_category_key, disabled=not bool(self.category_options))
-        
+
         self.message_text = ft.Text("")
-        
+
         self.content = self._build_ui()
+
+        # Subscribe to refresh categories
+        def _on_pubsub_message(msg):
+            if msg == "refresh_categories":
+                self._refresh_categories()
+        self.page.pubsub.subscribe(_on_pubsub_message)
+
+    def _refresh_categories(self):
+        categories = get_categories()
+        self.category_options = [ft.dropdown.Option(key=str(c['category_id']), text=c['name']) for c in categories]
+        self.category_choice.options = self.category_options
+        if self.category_options:
+            self.category_choice.value = self.category_options[0].key
+            self.category_choice.disabled = False
+        else:
+            self.category_choice.value = None
+            self.category_choice.disabled = True
+        self.page.update()
 
     def _handle_report_submit(self, e):
         if not all([self.title_field.value, self.desc_field.value, self.status_choice.value, self.category_choice.value]):

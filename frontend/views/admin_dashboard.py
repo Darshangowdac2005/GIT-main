@@ -48,7 +48,7 @@ class AdminDashboard(ft.Container):
                     self.claims_data_table.rows.append(self._build_claim_row(claim))
             else:
                 try:
-                    error_msg = response.json().get('message', 'Auth failed.')
+                    error_msg = response.json().get('error')
                 except ValueError:
                     error_msg = f"Unexpected response: {response.text[:100]}"
                 self.message_text.value = f"Error loading claims: {error_msg}"
@@ -138,7 +138,7 @@ class AdminDashboard(ft.Container):
             else:
                 self.page.snack_bar = ft.SnackBar(ft.Text("Failed to load categories"), bgcolor=ft.colors.RED_400, open=True)
         except requests.exceptions.RequestException as err:
-            self.page.snack_bar = ft.SnackBar(ft.Text(f"Network error: {err}"), bgcolor=ft.Colors.RED_400, open=True)
+            self.page.snack_bar = ft.SnackBar(ft.Text(f"Network error: {err}"), bgcolor=ft.colors.RED_400, open=True)
         self.page.update()
 
     def _handle_create_category(self, e: ft.ControlEvent):
@@ -153,6 +153,8 @@ class AdminDashboard(ft.Container):
                 self.category_name_input.value = ""
                 self.page.snack_bar = ft.SnackBar(ft.Text("Category created"), open=True)
                 self._load_categories()
+                if hasattr(self.page, "pubsub"):
+                    self.page.pubsub.send_all("refresh_categories")
             else:
                 try:
                     err_msg = response.json().get('error', 'Create failed')
@@ -170,6 +172,8 @@ class AdminDashboard(ft.Container):
             if response.status_code == 200:
                 self.page.snack_bar = ft.SnackBar(ft.Text("Category deleted"), open=True)
                 self._load_categories()
+                if hasattr(self.page, "pubsub"):
+                    self.page.pubsub.send_all("refresh_categories")
             else:
                 try:
                     err_msg = response.json().get('error', 'Delete failed')
@@ -193,6 +197,8 @@ class AdminDashboard(ft.Container):
                 self.page.snack_bar = ft.SnackBar(ft.Text("Category updated"), open=True)
                 self.edit_mode = None
                 self._load_categories()
+                if hasattr(self.page, "pubsub"):
+                    self.page.pubsub.send_all("refresh_categories")
             else:
                 try:
                     err_msg = response.json().get('error', 'Update failed')

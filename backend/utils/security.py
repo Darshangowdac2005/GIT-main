@@ -31,19 +31,19 @@ def token_required(f):
     def decorated(*args, **kwargs):
         token = request.headers.get('Authorization')
         if not token or not token.startswith('Bearer '):
-            return jsonify({'message': 'Token is missing or invalid!'}), 401
-        
+            return jsonify({'error': 'Token is missing or invalid!'}), 401
+
         token = token.split(' ')[1]
-        
+
         try:
             # Decode token and attach user info to request
             data = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
             request.user_id = data['user_id']
             request.user_role = data['role']
         except jwt.ExpiredSignatureError:
-            return jsonify({'message': 'Token has expired!'}), 401
+            return jsonify({'error': 'Token has expired!'}), 401
         except jwt.InvalidTokenError:
-            return jsonify({'message': 'Token is invalid!'}), 401
+            return jsonify({'error': 'Token is invalid!'}), 401
             
         return f(*args, **kwargs)
     return decorated
@@ -54,6 +54,6 @@ def admin_required(f):
     @token_required
     def decorated(*args, **kwargs):
         if request.user_role != 'admin':
-            return jsonify({'message': 'Admin access required!'}), 403
+            return jsonify({'error': 'Admin access required!'}), 403
         return f(*args, **kwargs)
     return decorated

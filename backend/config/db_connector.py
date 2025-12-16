@@ -124,10 +124,27 @@ def create_tables_and_seed():
         )
     """)
     
+    # --- Add the MySQL trigger to update Items.status when a claim is approved ---
+    try:
+        cursor.execute("DROP TRIGGER IF EXISTS update_item_status_on_claim_approval")
+        cursor.execute("""
+            CREATE TRIGGER update_item_status_on_claim_approval
+            AFTER UPDATE ON Claims
+            FOR EACH ROW
+            BEGIN
+                IF NEW.claim_status = 'approved' THEN
+                    UPDATE Items SET status = 'resolved' WHERE item_id = NEW.item_id;
+                END IF;
+            END;
+        """)
+        print("✅ Trigger 'update_item_status_on_claim_approval' created successfully.")
+    except mysql.connector.Error as err:
+        print(f"❌ Failed to create trigger: {err}")
+    
     # Seed categories if empty
     cursor.execute("SELECT COUNT(*) FROM Categories")
     count = cursor.fetchone()[0]
-    print(f"📊 Categories table has {count} entries.")
+    print(f"Categories table has {count} entries.")
     if count == 0:
         categories = ['Electronics', 'Clothing', 'Books', 'Accessories', 'Other']
         print(f"🌱 Seeding {len(categories)} default categories...")
@@ -138,7 +155,7 @@ def create_tables_and_seed():
             except mysql.connector.Error as err:
                 print(f"❌ Failed to insert category '{cat}': {err}")
                 # Continue with other categories even if one fails
-        print("🌱 Category seeding completed.")
+        print("Category seeding completed.")
     else:
         print("✅ Categories already seeded.")
 

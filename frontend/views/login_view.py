@@ -42,7 +42,7 @@ class LoginView(ft.Container):
                     content=ft.Container(
                         ft.Column(
                             [
-                                ft.Text("User Login", size=24, weight=ft.FontWeight.BOLD),
+                                ft.Text("Back2u Login", size=24, weight=ft.FontWeight.BOLD),
                                 self.email_field,
                                 self.password_field,
                                 ft.Row(
