@@ -10,9 +10,7 @@ db_config = {
     'host': os.getenv('MYSQL_HOST'),
     'user': os.getenv('MYSQL_USER'),
     'password': os.getenv('MYSQL_PASSWORD'),
-    'database': os.getenv('MYSQL_DB'),
-    'ssl_disabled': True,
-    'use_pure': True
+    'database': os.getenv('MYSQL_DB')
 }
 
 # If database doesn't exist, connect without it first
